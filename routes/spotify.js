@@ -5,7 +5,7 @@ var request = require('request'); // "Request" library
 var cors = require('cors');
 var cookieParser = require('cookie-parser');
 const axios = require('axios');
-
+let path = require('path');
 //debugging
 const fs = require('fs');
 
@@ -349,16 +349,22 @@ router.get('/callback', function (req, res) {
 
 
                 // we can also pass the token to the browser to make requests from there
-                res.redirect('/#' +
-                    querystring.stringify({
-                        access_token: access_token,
-                        refresh_token: refresh_token
-                    }));
+                // try {
+                //     await axios.get('/demo');
+                // }
+                // catch (err) {
+                //     console.log(err);
+                // }
+
+                res.redirect('http://localhost:3000/demo');
             } else {
-                res.redirect('/#' +
-                    querystring.stringify({
-                        error: 'invalid_token'
-                    }));
+                // try {
+                //     await axios.get('/demo');
+                // }
+                // catch (err) {
+                //     console.log(err);
+                // }
+                res.redirect('http://localhost:3000/demo');
             }
         });
     }

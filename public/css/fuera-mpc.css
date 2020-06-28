@@ -1,0 +1,113 @@
+:root {
+  --button-shadow: 0.1em 0.1em rgb(130, 128, 128);
+  --off-white: rgb(249, 244, 236);
+  --medium-gray: rgb(183, 185, 182);
+  --dark-gray: rgb(75, 75, 75);
+  --dark-shadow: rgb(48, 48, 48);
+}
+
+#mpc-body {
+  text-align: center;
+  background-color: var(--off-white);
+  position: relative;
+  margin: auto;
+  padding: 0.5em;
+  padding-top: 1.5em;
+  border: 1px solid rgb(175, 170, 158);
+  border-radius: 5px;
+  max-width: 25em;
+  height: 35em;
+}
+
+.button {
+  box-shadow: var(--button-shadow);
+  border: 1px solid var(--medium-gray);
+  background-color: var(--off-white);
+  border-radius: 2px;
+}
+
+#right-side {
+  grid-template-rows: 11% 24% 65%;
+}
+
+#brand {
+  grid-template-columns: 100%;
+  grid-template-rows: 50% 50%;
+  position: relative;
+}
+
+#akai {
+  font: 2.5em 'Suez One', serif;
+  color: rgb(228, 24, 79);
+  place-self: center;
+}
+
+#akai-pro {
+  font: italic lighter 0.8em 'Suez One', serif;
+  color: rgb(228, 24, 79);
+  justify-self: center;
+}
+
+#right-ctrl {
+  background-color: var(--medium-gray);
+  margin: 0.5em;
+  grid-template-columns: 25% 25% 25% 25%;
+  grid-auto-rows: auto;
+  box-shadow: inset -1em 1em 2em 2em rgb(180, 180, 180);
+}
+
+#right-ctrl .button {
+  width: 2.5em;
+  height: 1.2em;
+  place-self: center;
+}
+
+#right-ctrl .knob {
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  justify-self: center;
+  align-self: end;
+  box-shadow: 0.3em 0.3em 0.1em 0.1em rgb(130, 128, 128);
+}
+
+/* drum pads  */
+#pads {
+  justify-self: stretch;
+  grid-template-columns: 33% 33% 33%;
+  grid-template-rows: 33% 33% 33%;
+  background-color: rgb(197, 198, 197);
+  padding: 0.5em;
+  margin: 0.5em
+}
+
+.pad {
+  background-color: rgb(163, 162, 162);
+  text-align: center;
+  place-self: stretch;
+  margin: 0.25em;
+  padding-top: 2.1em;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0.5em var(--dark-gray);
+  box-shadow: 2px 2px 0 var(--dark-gray);
+}
+
+.grid {
+  display: grid;
+}
+
+.br-2 {
+  border-radius: 2px;
+}
+
+.cousine {
+  font-family: 'Cousine', monospace;
+}
+
+.bg-white {
+  background-color: var(--off-white);
+}
+
+.bg-salmon {
+  background-color: rgb(244, 139, 177);
+}

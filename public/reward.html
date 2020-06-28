@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2020 Fuera per tutti</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/fuera-mpc.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Cousine|Orbitron|Suez+One|Dosis"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <section class="hero is-fuera is-fullheight">
+      <div class="hero-body has-text-centered">
+        <div class="container">
+          <img
+            src="./images/fuera-disc-berlino-top.png"
+            class="fuera-top-disc"
+          />
+          <img
+            src="./images/fuera-disc-berlino-bottom.png"
+            class="fuera-bottom-disc"
+          />
+          <div>
+            <div id="mpc-body" class="grid">
+              <div id="right-side" class="grid">
+                <div id="brand" class="grid">
+                  <div id="akai">FUERA</div>
+                  <div id="akai-pro">professional</div>
+                </div>
+                <div id="right-ctrl" class="grid br-2">
+                  <div class="button br-2"></div>
+                  <div class="button br-2"></div>
+                  <div class="knob bg-salmon"></div>
+                  <div class="knob bg-white"></div>
+                  <div class="button br-2"></div>
+                  <div class="button br-2"></div>
+                </div>
+                <div id="pads" class="grid br-2 cousine">
+                  <div class="pad" onclick="playAudio('music.mp3')">2</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">0</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">2</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">0</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">F</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">U</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">E</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">R</div>
+                  <div class="pad" onclick="playAudio('music.mp3')">A</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script type="text/javascript">
+      function playAudio(url) {
+        new Audio(url).play();
+      }
+    </script>
+  </body>
+</html>

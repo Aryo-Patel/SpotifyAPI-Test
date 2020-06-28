@@ -40,7 +40,9 @@ app.use(express.static(__dirname + '/public')).use(cors()).use(cookieParser());
 //Routes
 app.use('/', spotifyRouter);
 
-
+app.get('/demo', (req, res) => {
+    res.sendFile(__dirname + '/public/reward.html');
+});
 //listening on port 3000 temporarily
 app.listen(3000, () => {
     console.log('Listening on port 3000');

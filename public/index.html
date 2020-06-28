@@ -1,39 +1,61 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Example of the Authorization Code flow with Spotify</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2020 Fuera per tutti</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
+    />
     <link
       rel="stylesheet"
       href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"
     />
-    <style type="text/css">
-      #login,
-      #loggedin {
-        display: none;
-      }
-      .text-overflow {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 500px;
-      }
-    </style>
   </head>
 
   <body>
-    <div class="container">
-      <div id="login">
-        <h1>This is an example of the Authorization Code flow</h1>
-        <a href="/login" class="btn btn-primary">Log in with Spotify</a>
+    <section class="hero is-fuera is-fullheight">
+      <div class="hero-body has-text-centered">
+        <div class="container">
+          <img
+            src="./images/fuera-disc-berlino-top.png"
+            class="fuera-top-disc"
+          />
+          <img
+            src="./images/fuera-disc-berlino-bottom.png"
+            class="fuera-bottom-disc"
+          />
+          <div>
+            <img
+              src="./images/hero-index.png"
+              style="max-width: 50%;"
+              class="is-hidden-touch"
+            />
+            <img
+              src="./images/hero-index.png"
+              style="max-width: 100%;"
+              class="is-hidden-desktop"
+            />
+            <br />
+            <a href="/login" class="button is-rounded is-large is-hidden-touch">
+              <b
+                ><i class="fab fa-spotify"></i>&nbsp&nbspSpotify | &nbspLogin
+                →</b
+              >
+            </a>
+
+            <button class="button is-rounded is-medium is-hidden-desktop">
+              <b
+                ><i class="fab fa-spotify" style="color: #1db954;"></i
+                >&nbsp&nbspSpotify | &nbspLogin →</b
+              >
+            </button>
+          </div>
+        </div>
       </div>
-      <div id="loggedin">
-        <div id="user-profile"></div>
-        <div id="oauth"></div>
-        <button class="btn btn-default" id="obtain-new-token">
-          Obtain new token using the refresh token
-        </button>
-      </div>
-    </div>
+    </section>
 
     <script id="user-profile-template" type="text/x-handlebars-template">
       <h1>
@@ -131,9 +153,6 @@
           var e,
             r = /([^&;=]+)=?([^&;]*)/g,
             q = window.location.hash.substring(1);
-          console.log(e);
-          console.log(r);
-          console.log(q);
           while ((e = r.exec(q))) {
             hashParams[e[1]] = decodeURIComponent(e[2]);
           }
@@ -187,24 +206,24 @@
             $("#loggedin").hide();
           }
 
-          document.getElementById("obtain-new-token").addEventListener(
-            "click",
-            function () {
-              $.ajax({
-                url: "/refresh_token",
-                data: {
-                  refresh_token: refresh_token,
-                },
-              }).done(function (data) {
-                access_token = data.access_token;
-                oauthPlaceholder.innerHTML = oauthTemplate({
-                  access_token: access_token,
-                  refresh_token: refresh_token,
-                });
-              });
-            },
-            false
-          );
+          // document.getElementById("obtain-new-token").addEventListener(
+          //   "click",
+          //   function () {
+          //     $.ajax({
+          //       url: "/refresh_token",
+          //       data: {
+          //         refresh_token: refresh_token,
+          //       },
+          //     }).done(function (data) {
+          //       access_token = data.access_token;
+          //       oauthPlaceholder.innerHTML = oauthTemplate({
+          //         access_token: access_token,
+          //         refresh_token: refresh_token,
+          //       });
+          //     });
+          //   },
+          //   false
+          // );
         }
       })();
     </script>
