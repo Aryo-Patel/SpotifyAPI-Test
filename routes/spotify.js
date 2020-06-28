@@ -356,7 +356,7 @@ router.get('/callback', function (req, res) {
                 //     console.log(err);
                 // }
 
-                res.redirect('http://localhost:3000/demo');
+                res.redirect('http://localhost:3000/reward');
             } else {
                 // try {
                 //     await axios.get('/demo');
@@ -364,7 +364,7 @@ router.get('/callback', function (req, res) {
                 // catch (err) {
                 //     console.log(err);
                 // }
-                res.redirect('http://localhost:3000/demo');
+                res.redirect('http://localhost:3000/reward');
             }
         });
     }
