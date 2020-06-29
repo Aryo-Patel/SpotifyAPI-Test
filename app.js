@@ -43,8 +43,10 @@ app.use('/', spotifyRouter);
 app.get('/reward', (req, res) => {
     res.sendFile(__dirname + '/public/reward.html');
 });
+
+const PORT = process.env.PORT || 3000;
 //listening on port 3000 temporarily
-app.listen(3000, () => {
-    console.log('Listening on port 3000');
+app.listen(PORT, () => {
+    console.log('Listening on port ' + PORT);
 
 });
