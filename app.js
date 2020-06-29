@@ -8,6 +8,8 @@ const cookieParser = require('cookie-parser');
 const config = require('config');
 const mongoose = require('mongoose');
 
+const http = require('http');
+
 //Spotify API requirements
 const client_id = config.get('CLIENT_ID');
 const client_secret = config.get('CLIENT_SECRET');
@@ -22,6 +24,23 @@ const spotifyRouter = require('./routes/spotify');
 
 //accepting JSON files
 app.use(express.json());
+
+
+//port normalization
+function normalizePort(val) {
+    let port = parseInt(val, 10);
+    if (isNaN(port)) {
+        // named pipe
+        return val;
+    }
+
+    if (port >= 0) {
+        // port number
+        return port;
+    }
+
+    return false;
+}
 
 
 //mongoDB setup 
@@ -43,6 +62,9 @@ app.use('/', spotifyRouter);
 app.get('/reward', (req, res) => {
     res.sendFile(__dirname + '/public/reward.html');
 });
+
+
+let server = http.createServer(app);
 
 const PORT = process.env.PORT || 3000;
 //listening on port 3000 temporarily
