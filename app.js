@@ -26,6 +26,10 @@ const spotifyRouter = require('./routes/spotify');
 app.use(express.json());
 
 
+const User = require('./models/User');
+const AudioFeatures = require('./models/AudioFeatures');
+const Artist = require('./models/Artist');
+
 //port normalization
 function normalizePort(val) {
     let port = parseInt(val, 10);
@@ -62,6 +66,16 @@ app.use('/', spotifyRouter);
 app.get('/reward', (req, res) => {
     res.sendFile(__dirname + '/public/reward.html');
 });
+app.get('/clearDB/:id', async (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+    if (req.params.id === 'Fuera2020R3537') {
+        await AudioFeatures.remove();
+        await User.remove();
+        await Artist.remove();
+        console.log('removed all the entires in DB');
+    }
+})
+
 
 
 let server = http.createServer(app);

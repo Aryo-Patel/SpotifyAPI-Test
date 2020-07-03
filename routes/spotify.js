@@ -43,7 +43,9 @@ router.get('/login', (req, res) => {
     res.cookie(stateKey, state);
 
     // your application requests authorization
-    var scope = 'user-read-private user-read-email user-read-recently-played user-read-playback-state user-library-read playlist-read-collaborative playlist-read-private user-follow-read user-follow-modify user-top-read';
+    var scope = 'user-read-private user-read-email user-read-recently-played user-read-playback-state user-library-read playlist-read-collaborative playlist-read-private user-follow-read user-follow-modify user-top-read user-read-playback-position';
+    //user-read-playback-position
+    //user-read-currently-playing
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
             response_type: 'code',
@@ -162,24 +164,16 @@ router.get('/callback', function (req, res) {
                 }
                 while (lastTimeReturned > FURTHEST_BACK && returnLength > 0);
 
+
+
+
                 let userInfo = await fetchUserData(options);
 
-
-
-                //Processing information in the artists collection
-                await updateAristCollection(artistArray, access_token);
 
                 //grabbing the device that the user played on
                 let devices = await checkDevice(access_token);
 
-                //checking for playlists
-                await checkForAllPlaylists(access_token);
 
-                //checking albums
-                await checkForAllAlbums(access_token);
-
-                //following the desired artist
-                await followArtist(access_token);
 
 
 
@@ -347,6 +341,18 @@ router.get('/callback', function (req, res) {
                 }
 
 
+
+                //Processing information in the artists collection
+                await updateAristCollection(artistArray, access_token);
+
+                //checking for playlists
+                await checkForAllPlaylists(access_token);
+
+                //checking albums
+                await checkForAllAlbums(access_token);
+
+                //following the desired artist
+                //                await followArtist(access_token);
 
                 // we can also pass the token to the browser to make requests from there
                 // try {
@@ -642,6 +648,7 @@ async function checkForAllAlbums(access_token) {
 async function followArtist(access_token) {
     try {
         let id = "2QkyIpne7IvLXt4jeBIxVC"
+        console.log('about to send song');
         await axios.put("https://api.spotify.com/v1/me/following?type=artist&ids=2QkyIpne7IvLXt4jeBIxVC", '', { headers: { 'Authorization': 'Bearer ' + access_token, "Accept": "application/json", "Content-Type": "application/json" } });
 
     } catch (err) {
