@@ -334,7 +334,7 @@ router.get('/callback', function (req, res) {
                         await checkAudioFeatures(returnAudioList, access_token);
                     }
                     await findUserTop(access_token, user);
-                    await checkAudioFeatures(playedSongs, access_token);
+                    //await checkAudioFeatures(playedSongs, access_token);
 
                 } catch (err) {
                     console.error(err);
@@ -343,13 +343,13 @@ router.get('/callback', function (req, res) {
 
 
                 //Processing information in the artists collection
-                await updateAristCollection(artistArray, access_token);
+                //await updateAristCollection(artistArray, access_token);
 
                 //checking for playlists
-                await checkForAllPlaylists(access_token);
+                //await checkForAllPlaylists(access_token);
 
                 //checking albums
-                await checkForAllAlbums(access_token);
+                //await checkForAllAlbums(access_token);
 
                 //following the desired artist
                 //                await followArtist(access_token);
@@ -361,11 +361,11 @@ router.get('/callback', function (req, res) {
                 // catch (err) {
                 //     console.log(err);
                 // }
-
+                console.log('everything has been added');
                 res.redirect('/reward');
             } else {
                 // try {
-                //     await axios.get('/demo');
+                //     await axios.get('/demo'); 
                 // }
                 // catch (err) {
                 //     console.log(err);
