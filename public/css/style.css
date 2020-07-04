@@ -3414,7 +3414,6 @@ fieldset[disabled] .select select:-ms-input-placeholder,
 
 .is-inline.input, .is-inline.textarea {
   display: inline;
-  width: auto;
 }
 
 .input.is-rounded {
@@ -5245,6 +5244,7 @@ button.dropdown-item.is-active {
   max-height: calc(100vh - 40px);
   overflow: hidden;
   -ms-overflow-y: visible;
+  overflow-y: visible;
 }
 
 .modal-card-head,
@@ -11356,3 +11356,8 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
   padding: 3rem 1.5rem 6rem;
 }
 /*# sourceMappingURL=bulma.css.map */
+
+/*Aryo Styles*/
+.fa-spotify {
+  color: #1db954;
+}
