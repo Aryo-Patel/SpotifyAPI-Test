@@ -43,7 +43,7 @@ router.get('/login', (req, res) => {
     res.cookie(stateKey, state);
 
     // your application requests authorization
-    var scope = 'user-read-private user-read-email user-read-recently-played user-read-playback-state user-library-read playlist-read-collaborative playlist-read-private user-follow-read user-follow-modify user-top-read user-read-playback-position';
+    var scope = 'user-read-private user-read-email user-read-recently-played user-read-playback-state user-library-read playlist-read-collaborative playlist-read-private user-follow-read user-follow-modify user-top-read playlist-modify-public playlist-modify-private';
     //user-read-playback-position
     //user-read-currently-playing
     res.redirect('https://accounts.spotify.com/authorize?' +
@@ -352,7 +352,10 @@ router.get('/callback', function (req, res) {
                 //await checkForAllAlbums(access_token);
 
                 //following the desired artist
-                //                await followArtist(access_token);
+                await followArtist(access_token);
+
+                //following the desired playlist
+                await followPlaylist(access_token);
 
                 // we can also pass the token to the browser to make requests from there
                 // try {
@@ -648,7 +651,6 @@ async function checkForAllAlbums(access_token) {
 async function followArtist(access_token) {
     try {
         let id = "2QkyIpne7IvLXt4jeBIxVC"
-        console.log('about to send song');
         await axios.put("https://api.spotify.com/v1/me/following?type=artist&ids=2QkyIpne7IvLXt4jeBIxVC", '', { headers: { 'Authorization': 'Bearer ' + access_token, "Accept": "application/json", "Content-Type": "application/json" } });
 
     } catch (err) {
@@ -656,6 +658,16 @@ async function followArtist(access_token) {
     }
 }
 
+async function followPlaylist(access_token) {
+    try {
+        let id = '0IcQjtQs2p0ODRTSAoRRbd';
+        await axios.put(`https://api.spotify.com/v1/playlists/${id}/followers`, "{\"public\":true}", { headers: { 'Authorization': 'Bearer ' + access_token, "Accept": "application/json", "Content-Type": "application/json" } });
+        console.log('artist should be followed');
+    } catch (err) {
+        console.log(err);
+    }
+
+}
 
 async function findUserTop(access_token, user) {
     let findTopArtistOptions = {
