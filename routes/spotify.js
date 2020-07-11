@@ -19,6 +19,9 @@ const client_id = config.get('CLIENT_ID');
 const client_secret = config.get('CLIENT_SECRET');
 const redirect_uri = config.get('REDIRECT_URI');
 
+let accessToken;
+let playedSongs = [];
+
 var generateRandomString = function (length) {
     var text = '';
     var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -91,7 +94,7 @@ router.get('/callback', function (req, res) {
         request.post(authOptions, async function (error, response, body) {
             if (!error && response.statusCode === 200) {
 
-                var access_token = body.access_token,
+                access_token = body.access_token,
                     refresh_token = body.refresh_token;
 
                 var options = {
@@ -105,7 +108,7 @@ router.get('/callback', function (req, res) {
                 2) grab the first batch of songs that fit the criteria.
                 3) If the time played of the last song is greater than the unix time 30 days ago, grab the next batch of songs, with the start time being the time of the last played song. 
                 */
-                let playedSongs = [];
+                //let playedSongs = [];
                 let artistArray = [];
                 let trackList = [];
                 const FURTHEST_BACK = Date.now() - UNIX_DAY * 45;
@@ -334,7 +337,7 @@ router.get('/callback', function (req, res) {
                         await checkAudioFeatures(returnAudioList, access_token);
                     }
                     await findUserTop(access_token, user);
-                    //await checkAudioFeatures(playedSongs, access_token);
+
 
                 } catch (err) {
                     console.error(err);
@@ -378,6 +381,20 @@ router.get('/callback', function (req, res) {
         });
     }
 });
+
+router.get('/reward', async (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/reward.html'));
+
+    let date;
+    date = Date.now();
+    console.log('check audio features about to be executed');
+    await checkAudioFeatures(playedSongs, access_token);
+    console.log('check audio features finished in ' + (Date.now() - date) + ' units of time');
+
+    console.log('playlists about to be checked');
+    await checkForAllPlaylists(access_token);
+
+})
 
 
 async function fetchData(options, iterCount) {
