@@ -16,7 +16,7 @@ const client_secret = config.get('CLIENT_SECRET');
 const redirect_uri = config.get('REDIRECT_URI');
 
 //MongoDB files
-const MONGO_URI = config.get('MONGO_URI');
+const MONGO_URI = config.get('MONGO_URI_TEST');
 
 
 //importing routers
