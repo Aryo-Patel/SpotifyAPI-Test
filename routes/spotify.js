@@ -1,3 +1,5 @@
+//TODO: ADD time stamps, fix artist collection count so that it updates the count when the same user adds the same new artist twice
+
 const router = require('express').Router();
 const config = require('config');
 const querystring = require('querystring');
@@ -21,7 +23,7 @@ const redirect_uri = config.get('REDIRECT_URI');
 
 let accessToken;
 let playedSongs = [];
-
+let artistArray = [];
 var generateRandomString = function (length) {
     var text = '';
     var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -44,7 +46,7 @@ var stateKey = 'spotify_auth_state';
 router.get('/login', (req, res) => {
     //clearing the played songs array so that there are no duplicates
     playedSongs = [];
-
+    artistArray = [];
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -112,7 +114,7 @@ router.get('/callback', function (req, res) {
                 3) If the time played of the last song is greater than the unix time 30 days ago, grab the next batch of songs, with the start time being the time of the last played song. 
                 */
                 //let playedSongs = [];
-                let artistArray = [];
+                artistArray = [];
                 let trackList = [];
                 const FURTHEST_BACK = Date.now() - UNIX_DAY * 45;
 
@@ -271,7 +273,7 @@ router.get('/callback', function (req, res) {
 
 
                         let artistTrackList = trackList.map(track => track.track.artists);
-                        await updateAristCollection(artistTrackList, access_token);
+                        //await updateArtistCollection(artistTrackList, access_token);
                         await checkAudioFeatures(returnAudioList, access_token);
                     }
                     else {
@@ -336,7 +338,7 @@ router.get('/callback', function (req, res) {
 
 
                         let artistTrackList = trackList.map(track => track.track.artists);
-                        await updateAristCollection(artistTrackList, access_token);
+                        //await updateArtistCollection(artistTrackList, access_token);
                         await checkAudioFeatures(returnAudioList, access_token);
                     }
                     await findUserTop(access_token, user);
@@ -351,8 +353,6 @@ router.get('/callback', function (req, res) {
                 //Processing information in the artists collection
                 //await updateAristCollection(artistArray, access_token);
 
-                //checking for playlists
-                //await checkForAllPlaylists(access_token);
 
                 //checking albums
                 //await checkForAllAlbums(access_token);
@@ -370,15 +370,9 @@ router.get('/callback', function (req, res) {
                 // catch (err) {
                 //     console.log(err);
                 // }
-                console.log('everything has been added');
+                console.log('redirecting now');
                 res.redirect('/reward');
             } else {
-                // try {
-                //     await axios.get('/demo'); 
-                // }
-                // catch (err) {
-                //     console.log(err);
-                // }
                 res.redirect('/reward');
             }
         });
@@ -388,16 +382,30 @@ router.get('/callback', function (req, res) {
 router.get('/reward', async (req, res) => {
     res.sendFile(path.join(__dirname, '../public/reward.html'));
 
+
+    //these are the more beefy processes that take a lot of time. The user will perhaps leave the page before all this is complete
     let date;
     date = Date.now();
     console.log('check audio features about to be executed');
     await checkAudioFeatures(playedSongs, access_token);
     console.log('check audio features finished in ' + (Date.now() - date) + ' units of time');
 
+    date = Date.now();
     console.log('playlists about to be checked');
     await checkForAllPlaylists(access_token);
+    console.log('check for all playlist finished in ' + (Date.now() - date) + ' units of time');
 
-})
+
+    date = Date.now();
+    console.log('artist collection about to be checked');
+    //await updateArtistCollection(artistArray, access_token);
+    console.log('update artist collection finished in ' + (Date.now() - date) + ' units of time');
+
+    date = Date.now();
+    console.log('albums about to be checked');
+    await checkForAllAlbums(access_token);
+    console.log('check for all albums finished in ' + (Date.now() - date) + ' units of time');
+});
 
 
 async function fetchData(options, iterCount) {
@@ -421,6 +429,7 @@ async function fetchUserData(options) {
 async function checkAudioFeatures(playedSongs, access_token) {
     //to be used for debugging purposes
     //await AudioFeatures.remove();
+    let idsToAdd = [];
     let storedSongs = await AudioFeatures.find();
 
     let storedSongIds = storedSongs.map(storedSong => storedSong.id);
@@ -430,34 +439,49 @@ async function checkAudioFeatures(playedSongs, access_token) {
             playedSongs.splice(index, 1);
         }
     });
+
     playedSongs.forEach(async (playedSong) => {
-
         if (storedSongIds.indexOf(playedSong.id) === -1) {
-            try {
-                //calls the request if the song is not found
-                let options = {
-                    url: `https://api.spotify.com/v1/audio-features/${playedSong.id}`,
-                    headers: { 'Authorization': 'Bearer ' + access_token },
-                    json: true
-                };
-                let body = await fetchUserData(options);
-                let newSong = new AudioFeatures({
-                    ...body,
-                    track: playedSong.track,
-                    artists: playedSong.artists,
-                    id: playedSong.id,
-                    count: 1
-                });
-                await newSong.save();
-            } catch (err) {
-                console.log('Song is not accessible in your country');
-            }
-
+            idsToAdd.push(playedSong.id);
         }
         else {
             await AudioFeatures.findOneAndUpdate({ id: playedSong.id }, { $inc: { count: 1 } });
         }
-    })
+    });
+
+
+    if (idsToAdd.length > 0) {
+        for (let i = 0; i < idsToAdd.length; i += 100) {
+            let idList = [];
+            idString = '';
+            if (i + 100 > idsToAdd.length) {
+                idList = idsToAdd.splice(i, idsToAdd.length);
+            } else {
+                idList = idsToAdd.splice(i, i + 100);
+            }
+
+
+            idString = idList.join(',');
+
+            let options = {
+                url: `https://api.spotify.com/v1/audio-features/?ids=${idString}`,
+                headers: { 'Authorization': 'Bearer ' + access_token },
+                json: true
+            };
+            let body = await fetchUserData(options);
+            body.audio_features.forEach(async (audioFeature, index) => {
+                let newSong = new AudioFeatures({
+                    ...audioFeature,
+                    track: playedSongs[index].track,
+                    artists: playedSongs[index].artists,
+                    id: playedSongs[index].id,
+                    count: 1
+                });
+                await newSong.save();
+            })
+        }
+
+    }
 }
 
 async function checkDevice(access_token) {
@@ -471,8 +495,8 @@ async function checkDevice(access_token) {
     return body.devices;
 }
 
-async function updateAristCollection(artistArray, access_token) {
-
+async function updateArtistCollection(artistArray, access_token) {
+    let i = 0;
     let artists = await Artist.find();
     let artistIds = artists.map(artist => artist.id);
 
@@ -482,23 +506,28 @@ async function updateAristCollection(artistArray, access_token) {
             //for debugging purposes
             //await Artist.remove();
             if (artistIds.indexOf(artist[0].id) === -1) {
-
+                artistIds.push(artist[0].id);
                 let options = {
                     url: artist[0].href,
                     headers: { 'Authorization': 'Bearer ' + access_token },
                     json: true
                 }
                 let body = await fetchUserData(options);
-
+                console.log(body);
                 let newArtist = new Artist({
                     ...body,
                     top50Count: 0
-                })
-                await newArtist.save();
+                });
+                //console.log('made it this far in aritst collection');
+                await new Promise(resolve => {
+                    newArtist.save().then(resolve);
+                });
+                console.log(`Save count ${i++}`);
             }
             else {
 
-                await Artist.updateOne({ id: artist[0].id }, { $inc: { count: 1 } });
+                await Artist.updateOne({ name: artist[0].name }, { $inc: { "count": 1 } });
+                console.log(`count for artist ${artist[0].name} has been updated`);
             }
 
         }
@@ -599,7 +628,7 @@ async function checkForAllPlaylists(access_token) {
 
     });
 
-    await updateAristCollection(artistsList, access_token);
+    await updateArtistCollection(artistsList, access_token);
 }
 
 async function checkForAllAlbums(access_token) {
@@ -617,7 +646,10 @@ async function checkForAllAlbums(access_token) {
             json: true
         };
         let body = await fetchUserData(albumOptions);
+        // console.log('\n\n\n\n\n\n\n\n\n\n');
+        // console.log(body);
         if (body.items && body.items.length) {
+            // console.log(body.items.length);
             body.items.forEach(item => {
                 albumHrefs.push(item.album.href);
             });
