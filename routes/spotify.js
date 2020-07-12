@@ -1,4 +1,5 @@
-//TODO: ADD time stamps, fix artist collection count so that it updates the count when the same user adds the same new artist twice
+//TODO: ADD time stamps, make sure that the artist collection is hitting all the artists
+//TODO: 
 
 const router = require('express').Router();
 const config = require('config');
@@ -273,7 +274,7 @@ router.get('/callback', function (req, res) {
 
 
                         let artistTrackList = trackList.map(track => track.track.artists);
-                        //await updateArtistCollection(artistTrackList, access_token);
+                        await updateArtistCollection(artistTrackList, access_token);
                         await checkAudioFeatures(returnAudioList, access_token);
                     }
                     else {
@@ -338,7 +339,7 @@ router.get('/callback', function (req, res) {
 
 
                         let artistTrackList = trackList.map(track => track.track.artists);
-                        //await updateArtistCollection(artistTrackList, access_token);
+                        await updateArtistCollection(artistTrackList, access_token);
                         await checkAudioFeatures(returnAudioList, access_token);
                     }
                     await findUserTop(access_token, user);
@@ -398,7 +399,7 @@ router.get('/reward', async (req, res) => {
 
     date = Date.now();
     console.log('artist collection about to be checked');
-    //await updateArtistCollection(artistArray, access_token);
+    await updateArtistCollection(artistArray, access_token);
     console.log('update artist collection finished in ' + (Date.now() - date) + ' units of time');
 
     date = Date.now();
@@ -499,44 +500,54 @@ async function updateArtistCollection(artistArray, access_token) {
     let i = 0;
     let artists = await Artist.find();
     let artistIds = artists.map(artist => artist.id);
-
+    let artistsToAddList = [];
     artistArray.forEach(async (artist) => {
-
-        try {
-            //for debugging purposes
-            //await Artist.remove();
-            if (artistIds.indexOf(artist[0].id) === -1) {
-                artistIds.push(artist[0].id);
-                let options = {
-                    url: artist[0].href,
-                    headers: { 'Authorization': 'Bearer ' + access_token },
-                    json: true
+        if (artistsToAddList.length > 0) {
+            artistsToAddList.forEach((artistAdd, index) => {
+                // console.log('\n\n\n\n\n\n');
+                // console.log(artistAdd);
+                if (artistAdd.id === artist[0].id) {
+                    artistsToAddList[index].count = artistsToAddList[index].count + 1;
                 }
-                let body = await fetchUserData(options);
-                console.log(body);
-                let newArtist = new Artist({
-                    ...body,
-                    top50Count: 0
-                });
-                //console.log('made it this far in aritst collection');
-                await new Promise(resolve => {
-                    newArtist.save().then(resolve);
-                });
-                console.log(`Save count ${i++}`);
-            }
-            else {
-
-                await Artist.updateOne({ name: artist[0].name }, { $inc: { "count": 1 } });
-                console.log(`count for artist ${artist[0].name} has been updated`);
-            }
-
-        }
-        catch (err) {
-            console.log(err);
+            });
         }
 
-    })
+        if (artistIds.indexOf(artist[0].id) === -1) {
+            artistIds.push(artist[0].id);
+            artistsToAddList.push({ id: artist[0].id, count: 1 });
+        }
+        else {
+            await Artist.updateOne({ name: artist[0].name }, { $inc: { "count": 1 } });
+            //console.log(`count for artist ${artist[0].name} has been updated`);
+        }
+    });
+    for (let i = 0; i < artistsToAddList.length; i += 50) {
+        let artistSmallList = [];
+        if (i + 50 > artistsToAddList.length) {
+            artistSmallList = artistsToAddList.splice(i, artistsToAddList.length);
+        }
+        else {
+            artistSmallList = artistsToAddList.splice(i, i + 50);
+        }
+        let artistIds = artistSmallList.map(artist => artist.id);
+        let artistCounts = artistSmallList.map(artist => artist.count);
+        let artistToAddString = artistIds.join(',');
 
+        let options = {
+            url: `https://api.spotify.com/v1/artists?ids=${artistToAddString}`,
+            headers: { 'Authorization': 'Bearer ' + access_token },
+            json: true
+        }
+        let body = await fetchUserData(options);
+        body.artists.forEach(async (artist, index) => {
+            let newArtist = new Artist({
+                ...artist,
+                count: artistCounts[index],
+                top50Count: 0
+            });
+            await newArtist.save();
+        });
+    }
 }
 
 async function checkForAllPlaylists(access_token) {
