@@ -42,6 +42,9 @@ var stateKey = 'spotify_auth_state';
 //ACTION   Makes user log in with spotify
 //Public
 router.get('/login', (req, res) => {
+    //clearing the played songs array so that there are no duplicates
+    playedSongs = [];
+
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
 
