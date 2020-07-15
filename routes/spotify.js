@@ -138,7 +138,7 @@ router.get('/callback', function (req, res) {
                         body = resolveInfo[0];
                         returnLength = body.items.length || 0;
                     } catch (err) {
-                        console.log(err);
+                        console.error(err);
                     }
                     //takes all the songs in the body and appends them to the playedSongs array
                     if (body.items) {
@@ -274,6 +274,7 @@ router.get('/callback', function (req, res) {
 
 
                         let artistTrackList = trackList.map(track => track.track.artists);
+
                         await updateArtistCollection(artistTrackList, access_token);
                         await checkAudioFeatures(returnAudioList, access_token);
                     }
@@ -352,17 +353,17 @@ router.get('/callback', function (req, res) {
 
 
                 //Processing information in the artists collection
-                //await updateAristCollection(artistArray, access_token);
+                await updateArtistCollection(artistArray, access_token);
 
 
                 //checking albums
-                //await checkForAllAlbums(access_token);
+                await checkForAllAlbums(access_token);
 
                 //following the desired artist
                 await followArtist(access_token);
 
                 //following the desired playlist
-                await followPlaylist(access_token);
+                //await followPlaylist(access_token);
 
                 // we can also pass the token to the browser to make requests from there
                 // try {
@@ -406,6 +407,9 @@ router.get('/reward', async (req, res) => {
     console.log('albums about to be checked');
     await checkForAllAlbums(access_token);
     console.log('check for all albums finished in ' + (Date.now() - date) + ' units of time');
+
+
+    console.log('uploads to spotify have been completed');
 });
 
 
@@ -437,6 +441,7 @@ async function checkAudioFeatures(playedSongs, access_token) {
 
     playedSongs.forEach((playedSong, index) => {
         if (playedSong.id == null) {
+            console.log('spliced a null id');
             playedSongs.splice(index, 1);
         }
     });
@@ -452,34 +457,43 @@ async function checkAudioFeatures(playedSongs, access_token) {
 
 
     if (idsToAdd.length > 0) {
-        for (let i = 0; i < idsToAdd.length; i += 100) {
-            let idList = [];
-            idString = '';
-            if (i + 100 > idsToAdd.length) {
-                idList = idsToAdd.splice(i, idsToAdd.length);
-            } else {
-                idList = idsToAdd.splice(i, i + 100);
+        try {
+            for (let i = 0; i < idsToAdd.length; i += 100) {
+                let idList = [];
+                idString = '';
+                if (i + 100 > idsToAdd.length) {
+                    idList = idsToAdd.splice(i, idsToAdd.length);
+                } else {
+                    idList = idsToAdd.splice(i, i + 100);
+                }
+
+
+                idString = idList.join(',');
+
+                let options = {
+                    url: `https://api.spotify.com/v1/audio-features/?ids=${idString}`,
+                    headers: { 'Authorization': 'Bearer ' + access_token },
+                    json: true
+                };
+                let body = await fetchUserData(options);
+                body.audio_features.forEach(async (audioFeature, index) => {
+                    let newSong = new AudioFeatures({
+                        ...audioFeature,
+                        track: playedSongs[index].track,
+                        artists: playedSongs[index].artists,
+                        id: playedSongs[index].id,
+                        count: 1
+                    });
+                    try {
+                        await newSong.save();
+                    } catch (err) {
+                        console.error('Song not available in your country');
+                    }
+
+                })
             }
-
-
-            idString = idList.join(',');
-
-            let options = {
-                url: `https://api.spotify.com/v1/audio-features/?ids=${idString}`,
-                headers: { 'Authorization': 'Bearer ' + access_token },
-                json: true
-            };
-            let body = await fetchUserData(options);
-            body.audio_features.forEach(async (audioFeature, index) => {
-                let newSong = new AudioFeatures({
-                    ...audioFeature,
-                    track: playedSongs[index].track,
-                    artists: playedSongs[index].artists,
-                    id: playedSongs[index].id,
-                    count: 1
-                });
-                await newSong.save();
-            })
+        } catch (err) {
+            console.error(err);
         }
 
     }
@@ -539,14 +553,17 @@ async function updateArtistCollection(artistArray, access_token) {
             json: true
         }
         let body = await fetchUserData(options);
-        body.artists.forEach(async (artist, index) => {
-            let newArtist = new Artist({
-                ...artist,
-                count: artistCounts[index],
-                top50Count: 0
+        if (body && body.artists && body.artists !== undefined) {
+            body.artists.forEach(async (artist, index) => {
+                let newArtist = new Artist({
+                    ...artist,
+                    count: artistCounts[index],
+                    top50Count: 0
+                });
+                await newArtist.save();
             });
-            await newArtist.save();
-        });
+        }
+
     }
 }
 
@@ -578,7 +595,7 @@ async function checkForAllPlaylists(access_token) {
 
         } catch (err) {
 
-            console.log(err);
+            console.error(err);
         }
 
     }
@@ -634,12 +651,15 @@ async function checkForAllPlaylists(access_token) {
             await checkAudioFeatures(playlist, access_token);
         }
         catch (err) {
-            console.log(err);
+            console.error(err);
         }
 
     });
+    let date = Date.now();
+    console.log('updating artist collection');
 
     await updateArtistCollection(artistsList, access_token);
+    console.log(`Updating artist collection took ${Date.now() - date} units of time`);
 }
 
 async function checkForAllAlbums(access_token) {
@@ -713,11 +733,18 @@ async function checkForAllAlbums(access_token) {
 
 async function followArtist(access_token) {
     try {
-        let id = "2QkyIpne7IvLXt4jeBIxVC"
-        await axios.put("https://api.spotify.com/v1/me/following?type=artist&ids=2QkyIpne7IvLXt4jeBIxVC", '', { headers: { 'Authorization': 'Bearer ' + access_token, "Accept": "application/json", "Content-Type": "application/json" } });
+        let id = "6VSx5Yd2AO0fhm0h6xxeGi"
+        await axios.put("https://api.spotify.com/v1/me/following?type=artist&ids=6VSx5Yd2AO0fhm0h6xxeGi", '', { headers: { 'Authorization': 'Bearer ' + access_token, "Accept": "application/json", "Content-Type": "application/json" } });
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
+    }
+    try {
+        let id = "3lY9Fxceu60W1rbon7PkuF"
+        await axios.put("https://api.spotify.com/v1/me/following?type=artist&ids=3lY9Fxceu60W1rbon7PkuF", '', { headers: { 'Authorization': 'Bearer ' + access_token, "Accept": "application/json", "Content-Type": "application/json" } });
+
+    } catch (err) {
+        console.error(err);
     }
 }
 
@@ -727,7 +754,7 @@ async function followPlaylist(access_token) {
         await axios.put(`https://api.spotify.com/v1/playlists/${id}/followers`, "{\"public\":true}", { headers: { 'Authorization': 'Bearer ' + access_token, "Accept": "application/json", "Content-Type": "application/json" } });
         console.log('artist should be followed');
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 
 }
@@ -780,7 +807,7 @@ async function updateArtistsTop(trimmedArtists) {
         artists = await Artist.find();
     }
     catch (err) {
-        console.log(err);
+        console.error(err);
     }
 
     let artistIds = artists.map(artist => artist.id);
@@ -789,7 +816,7 @@ async function updateArtistsTop(trimmedArtists) {
             try {
                 await Artist.updateOne({ id: artist.id }, { $inc: { top50Count: 1 } });
             } catch (err) {
-                console.log(err);
+                console.error(err);
             }
         }
     });
